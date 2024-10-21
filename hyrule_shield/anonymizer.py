@@ -20,6 +20,10 @@ ENTITIES_TO_ANONYMIZE = ["PER", "ORG"]
 # Lista de palavras comuns que não devem ser reconhecidas como entidades sensíveis
 IGNORED_WORDS = ["olá", "meu nome", "meu cpf", "meu rg", "meu endereço", "empresa", "produto", "bom dia"]
 
+# Lista personalizada de nomes comuns e locais conhecidos que podem não ser reconhecidos corretamente
+COMMON_NAMES = ["João", "Maria", "Carlos", "Ana", "Beatriz", "Fernando", "Paulo"]
+COMMON_LOCATIONS = ["São Paulo", "Rio de Janeiro", "Belo Horizonte", "Curitiba", "Campinas", "Salvador"]
+
 def anonymize_message_spacy(message):
     # Processa a mensagem com SpaCy para identificar entidades nomeadas
     doc = nlp(message)
@@ -33,8 +37,8 @@ def anonymize_message_spacy(message):
             # Ignorar frases genéricas que não representam dados sensíveis reais
             if ent.text.lower() in IGNORED_WORDS:
                 continue
-            # Evitar capturar palavras curtas como saudações
-            if len(ent.text.split()) == 1 and ent.text.lower() in ["olá"]:
+            # Ignorar locais conhecidos que podem ser erroneamente identificados como pessoas
+            if ent.text in COMMON_LOCATIONS:
                 continue
             entities_to_anonymize.append((ent.start_char, ent.end_char, ent.label_))
 
@@ -42,6 +46,11 @@ def anonymize_message_spacy(message):
     for label, pattern in additional_patterns.items():
         for match in re.finditer(pattern, message):
             entities_to_anonymize.append((match.start(), match.end(), label))
+
+    # Adiciona entidades para nomes comuns se encontrados
+    for name in COMMON_NAMES:
+        for match in re.finditer(rf"\b{name}\b", message, re.IGNORECASE):
+            entities_to_anonymize.append((match.start(), match.end(), "PER"))
 
     # Ordena as entidades pela posição inicial para evitar sobreposição na substituição
     entities_to_anonymize = sorted(entities_to_anonymize, key=lambda x: x[0], reverse=True)

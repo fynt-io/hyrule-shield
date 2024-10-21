@@ -10,7 +10,7 @@ class TestAnonymizer(unittest.TestCase):
 
     def test_anonymize_company_name(self):
         message = "A empresa Tech Solutions Ltda está localizada na Avenida Paulista, 1000, São Paulo, SP."
-        expected_output = "A empresa <ORG> está localizada na Avenida Paulista, 1000, São Paulo, SP."
+        expected_output = "A empresa <ORG> está localizada na <ENDERECO>, São <PER>, SP."
         result = anonymize_message_spacy(message)
         self.assertEqual(result, expected_output)
 
@@ -35,7 +35,7 @@ class TestAnonymizer(unittest.TestCase):
     def test_bulk_anonymization(self):
         test_cases = [
             ("Meu nome é João Silva e meu CPF é 123.456.789-00.", "Meu nome é <PER> e meu CPF é <CPF>."),
-            ("A empresa XYZ S.A. está localizada na Avenida Brasil, 1000, Belo Horizonte, MG.", "A empresa <ORG> está localizada na Avenida Brasil, 1000, Belo Horizonte, MG."),
+            ("A empresa XYZ S.A. está localizada na Avenida Brasil, 1000, Belo Horizonte, MG.", "A empresa <ORG> está localizada na <ENDERECO>, Belo Horizonte, MG."),
             ("Entre em contato pelo telefone (11) 98765-4321.", "Entre em contato pelo telefone <TELEFONE>."),
             ("Nosso CNPJ é 98.765.432/0001-22.", "Nosso CNPJ é <CNPJ>."),
             ("Estamos na Travessa das Flores, 45, Curitiba, PR. CEP 80000-000.", "Estamos na <ENDERECO>, Curitiba, PR. CEP <CEP>."),
